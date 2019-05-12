@@ -1,5 +1,15 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Set up electron react developer tools
+
+Run this code inside the developer tools console
+
+```
+require('electron-react-devtools').install()
+```
+
+Then CMD+R to restart the window
+
 ## Available Scripts
 
 In the project directory, you can run:
