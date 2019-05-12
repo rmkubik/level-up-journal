@@ -21,6 +21,8 @@ class App extends Component {
     // username/Library/Application\ Support/journal/Settings
     directory: settings.get("directory") || null,
     filesData: [],
+    newEntry: false,
+    newEntryName: "",
     activeIndex: 0
   };
 
@@ -97,7 +99,7 @@ class App extends Component {
       });
 
       filesData.sort(({ date: dateA }, { date: dateB }) => {
-        return new Date(dateA) - new Date(dateB);
+        return new Date(dateB) - new Date(dateA);
       });
 
       this.setState(
@@ -109,14 +111,59 @@ class App extends Component {
     });
   };
 
+  newFile = event => {
+    event.preventDefault();
+
+    const { newEntryName, directory } = this.state;
+    const date = dateFns.format(new Date(), "MM-DD-YYYY");
+    fs.writeFile(`${directory}/${newEntryName}_${date}.md`, "", err => {
+      if (err) return console.log(err);
+
+      this.loadAndReadFiles(directory);
+
+      this.setState({
+        newEntry: false,
+        newEntryName: ""
+      });
+    });
+  };
+
   render() {
-    const { activeIndex, directory, filesData, loadedFile } = this.state;
+    const {
+      activeIndex,
+      directory,
+      filesData,
+      loadedFile,
+      newEntry,
+      newEntryName
+    } = this.state;
     return (
       <AppWrap>
         <Header>Journal</Header>
         {directory ? (
           <Split>
             <FilesWindow>
+              <Button
+                onClick={() =>
+                  this.setState({
+                    newEntry: !newEntry
+                  })
+                }
+              >
+                {"+ New Entry"}
+              </Button>
+              {newEntry && (
+                <form onSubmit={this.newFile}>
+                  <input
+                    autoFocus
+                    type="text"
+                    value={newEntryName}
+                    onChange={event =>
+                      this.setState({ newEntryName: event.target.value })
+                    }
+                  />
+                </form>
+              )}
               {filesData.map(({ title, date }, index) => (
                 <FileButton
                   active={activeIndex === index}
@@ -263,6 +310,22 @@ const FileButton = styled.button`
   }
   .date {
     margin: 0;
+  }
+`;
+
+const Button = styled.button`
+  background-color: transparent;
+  color: white;
+  border: solid 1px #82d8d8;
+  border-radius: 4px;
+  margin: 1rem auto;
+  font-size: 1rem;
+  transition: 0.3s ease all;
+  padding: 5px 10px;
+  display: block;
+  &:hover {
+    background-color: #82d8d8;
+    color: #191324;
   }
 `;
 
