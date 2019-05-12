@@ -1,6 +1,8 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, Menu, dialog } = require("electron");
+const isDev = require("electron-is-dev");
 const fs = require("fs");
+const path = require("path");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -17,8 +19,12 @@ function createWindow() {
     titleBarStyle: "hidden"
   });
 
-  // and load the index.html of the app.
-  mainWindow.loadURL("http://localhost:3000");
+  if (isDev) {
+    // and load the index.html of the app.
+    mainWindow.loadURL("http://localhost:3000");
+  } else {
+    mainWindow.loadFile(path.join(__dirname, "..", "/build/index.html"));
+  }
 
   // TODO: isMac came from example electron Menu code. It's not defined anywhere. It looks like this package would work as a substitute. https://www.npmjs.com/package/electron-is
   const isMac = process.platform === "darwin";
