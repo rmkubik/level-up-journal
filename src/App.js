@@ -7,17 +7,19 @@ import "brace/mode/markdown";
 import "brace/theme/dracula";
 import "./App.css";
 
-// This is needed because of how create-react-app works...
+// This `window.require` is needed because of how create-react-app works...allegedly
 // This will break the web version of the app
 const { ipcRenderer } = window.require("electron");
 const settings = window.require("electron-settings");
+const fs = window.require("fs");
 
 class App extends Component {
   state = {
     loadedFile: "",
     // this is a JSON-looking key value store in the file:
     // username/Library/Application\ Support/journal/Settings
-    directory: settings.get("directory") || null
+    directory: settings.get("directory") || null,
+    filesData: []
   };
 
   constructor() {
@@ -29,14 +31,33 @@ class App extends Component {
       });
     });
 
-    ipcRenderer.on("new-dir", (event, filePaths, dirPath) => {
+    ipcRenderer.on("new-dir", (event, directory) => {
       this.setState({
-        directory: dirPath,
-        filePaths
+        directory
       });
-      settings.set("directory", dirPath);
+      settings.set("directory", directory);
+      this.loadAndReadFiles(directory);
     });
+
+    const { directory } = this.state;
+
+    if (directory) {
+      this.loadAndReadFiles(directory);
+    }
   }
+
+  loadAndReadFiles = directory => {
+    fs.readdir(directory, (err, files) => {
+      const filteredFiles = files.filter(path => path.includes(".md"));
+      const filesData = filteredFiles.map(file => ({
+        path: `${directory}/${file}`
+      }));
+
+      this.setState({
+        filesData
+      });
+    });
+  };
 
   render() {
     return (
@@ -44,6 +65,11 @@ class App extends Component {
         <Header>Journal</Header>
         {this.state.directory ? (
           <Split>
+            <ul>
+              {this.state.filesData.map(({ path }) => (
+                <li>{path}</li>
+              ))}
+            </ul>
             <CodeWindow>
               <AceEditor
                 mode="markdown"

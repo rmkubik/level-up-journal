@@ -213,9 +213,5 @@ function openDir() {
   if (!directory) return;
 
   const dirPath = directory[0];
-  fs.readdir(dirPath, (err, files) => {
-    const filteredFiles = files.filter(path => path.includes(".md"));
-    const filePaths = filteredFiles.map(file => `${dirPath}/${file}`);
-    mainWindow.webContents.send("new-dir", filePaths, dirPath);
-  });
+  mainWindow.webContents.send("new-dir", dirPath);
 }
