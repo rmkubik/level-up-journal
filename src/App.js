@@ -19,7 +19,8 @@ class App extends Component {
     // this is a JSON-looking key value store in the file:
     // username/Library/Application\ Support/journal/Settings
     directory: settings.get("directory") || null,
-    filesData: []
+    filesData: [],
+    activeIndex: 0
   };
 
   constructor() {
@@ -53,7 +54,27 @@ class App extends Component {
     const content = fs.readFileSync(path).toString();
 
     this.setState({
-      loadedFile: content
+      loadedFile: content,
+      activeIndex: index
+    });
+  };
+
+  changeFile = index => () => {
+    const { activeIndex } = this.state;
+
+    if (index !== activeIndex) {
+      this.saveFile();
+      this.loadFile(index);
+    }
+  };
+
+  saveFile = () => {
+    const { activeIndex, loadedFile, filesData } = this.state;
+
+    fs.writeFile(filesData[activeIndex].path, loadedFile, err => {
+      if (err) return console.log(err);
+
+      console.log("File Saved!");
     });
   };
 
@@ -81,7 +102,7 @@ class App extends Component {
           <Split>
             <FilesWindow>
               {this.state.filesData.map(({ path }, index) => (
-                <button key={index} onClick={() => this.loadFile(index)}>
+                <button key={index} onClick={this.changeFile(index)}>
                   {path}
                 </button>
               ))}
