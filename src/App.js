@@ -85,9 +85,15 @@ class App extends Component {
   loadAndReadFiles = directory => {
     fs.readdir(directory, (err, files) => {
       const filteredFiles = files.filter(path => path.includes(".md"));
-      const filesData = filteredFiles.map(file => ({
-        path: `${directory}/${file}`
-      }));
+      const filesData = filteredFiles.map(file => {
+        const date = file.substring(file.indexOf("_") + 1, file.indexOf("."));
+
+        return {
+          date,
+          title: file.substring(0, file.indexOf("_")),
+          path: `${directory}/${file}`
+        };
+      });
 
       this.setState(
         {
@@ -106,13 +112,14 @@ class App extends Component {
         {directory ? (
           <Split>
             <FilesWindow>
-              {filesData.map(({ path }, index) => (
+              {filesData.map(({ title, date }, index) => (
                 <FileButton
                   active={activeIndex === index}
                   key={index}
                   onClick={this.changeFile(index)}
                 >
-                  {path}
+                  <p className="title">{title}</p>
+                  <p className="date">{date}</p>
                 </FileButton>
               ))}
             </FilesWindow>
@@ -233,6 +240,7 @@ const FileButton = styled.button`
   border: none;
   border-bottom: solid 1px #302b3a;
   transition: 0.3s ease all;
+  text-align: left;
   &:hover {
     opacity: 1;
     border-left: solid 4px #82d8d8;
@@ -243,4 +251,12 @@ const FileButton = styled.button`
     opacity: 1;
     border-left: solid 4px #82d8d8;
   `}
+  .title {
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin: 0 0.5px;
+  }
+  .date {
+    margin: 0;
+  }
 `;
