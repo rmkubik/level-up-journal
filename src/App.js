@@ -24,6 +24,13 @@ class App extends Component {
         loadedFile: fileContent
       });
     });
+
+    ipcRenderer.on("new-dir", (event, filePaths, dirPath) => {
+      this.setState({
+        directory: dirPath,
+        filePaths
+      });
+    });
   }
 
   render() {

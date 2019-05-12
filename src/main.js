@@ -47,14 +47,18 @@ function createWindow() {
       label: "File",
       submenu: [
         {
-          label: "Open File",
+          label: "Open Folder",
           accelerator: "CmdOrCtrl+O",
           click() {
-            openFile();
+            openDir();
           }
         },
         {
-          label: "Open Folder"
+          label: "Open File",
+          accelerator: "CmdOrCtrl+Shift+O",
+          click() {
+            openFile();
+          }
         }
       ]
     },
@@ -198,4 +202,20 @@ function openFile() {
 
   // send an event and file content to the renderer process
   mainWindow.webContents.send("new-file", fileContent);
+}
+
+function openDir() {
+  const directory = dialog.showOpenDialog(mainWindow, {
+    properties: ["openDirectory"]
+  });
+
+  // Quit if no directory selected
+  if (!directory) return;
+
+  const dirPath = directory[0];
+  fs.readdir(dirPath, (err, files) => {
+    const filteredFiles = files.filter(path => path.includes(".md"));
+    const filePaths = filteredFiles.map(file => `${dirPath}/${file}`);
+    mainWindow.webContents.send("new-dir", filePaths, dirPath);
+  });
 }
