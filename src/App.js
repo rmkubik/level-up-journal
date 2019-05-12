@@ -10,10 +10,14 @@ import "./App.css";
 // This is needed because of how create-react-app works...
 // This will break the web version of the app
 const { ipcRenderer } = window.require("electron");
+const settings = window.require("electron-settings");
 
 class App extends Component {
   state = {
-    loadedFile: ""
+    loadedFile: "",
+    // this is a JSON-looking key value store in the file:
+    // username/Library/Application\ Support/journal/Settings
+    directory: settings.get("directory") || null
   };
 
   constructor() {
@@ -30,6 +34,7 @@ class App extends Component {
         directory: dirPath,
         filePaths
       });
+      settings.set("directory", dirPath);
     });
   }
 
@@ -37,30 +42,45 @@ class App extends Component {
     return (
       <div className="App">
         <Header>Journal</Header>
-        <Split>
-          <CodeWindow>
-            <AceEditor
-              mode="markdown"
-              theme="dracula"
-              onChange={newContent => {
-                this.setState({
-                  loadedFile: newContent
-                });
-              }}
-              name="markdown_editor"
-              value={this.state.loadedFile}
-            />
-          </CodeWindow>
-          <RenderedWindow>
-            <Markdown>{this.state.loadedFile}</Markdown>
-          </RenderedWindow>
-        </Split>
+        {this.state.directory ? (
+          <Split>
+            <CodeWindow>
+              <AceEditor
+                mode="markdown"
+                theme="dracula"
+                onChange={newContent => {
+                  this.setState({
+                    loadedFile: newContent
+                  });
+                }}
+                name="markdown_editor"
+                value={this.state.loadedFile}
+              />
+            </CodeWindow>
+            <RenderedWindow>
+              <Markdown>{this.state.loadedFile}</Markdown>
+            </RenderedWindow>
+          </Split>
+        ) : (
+          <LoadingMessage>
+            <h2>Press CmdOrCtrl + O to open a directory.</h2>
+          </LoadingMessage>
+        )}
       </div>
     );
   }
 }
 
 export default App;
+
+const LoadingMessage = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  background-color: #191324;
+  height: 100vh;
+`;
 
 const Header = styled.header`
   background-color: #191324;
